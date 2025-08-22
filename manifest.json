@@ -1,0 +1,10 @@
+{
+  "name": "Kibana Log Prettifier",
+  "description": "Right-click Kibana logs and prettify them",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["contextMenus", "activeTab", "scripting", "clipboardRead", "clipboardWrite"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
