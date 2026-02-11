@@ -1,19 +1,31 @@
 {
-  "name": "Kibana Log Prettifier",
-  "description": "Right-click Kibana logs and prettify them",
-  "version": "1.0",
   "manifest_version": 3,
-  "permissions": [
-    "contextMenus",
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
+  "name": "LOG BUSTER",
+  "version": "1.0.0",
   "action": {
+    "default_title": "LOG BUSTER",
     "default_popup": "popup.html",
-    "default_title": "Kibana Log Prettifier"
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "24":  "icons/icon24.png",
+      "32":  "icons/icon32.png"
+    }
+  },
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "scripting", "contextMenus", "activeTab"],
+  "background": { "service_worker": "background.js" },
+  "commands": {
+    "open-prettifier": {
+      "suggested_key": { "default": "Ctrl+Shift+Y", "mac": "Command+Shift+Y" },
+      "description": "Open LOG BUSTER popup"
+    },
+    "prettify-selection-and-open": {
+      "suggested_key": { "default": "Ctrl+Shift+P", "mac": "Command+Shift+P" },
+      "description": "Prettify the current selection and open the popup"
+    }
   }
 }

@@ -1,35 +1,175 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
   <title>Kibana Log Prettifier</title>
   <style>
+    :root {
+      --bg: #1e1e1e;
+      --fg: #dcdcdc;
+      --panel: #161b22;
+      --border: #30363d;
+      --tick: #ff1744;      /* bright red */
+      --tickHover: #ff5252; /* light red on hover */
+      --tickActive: #00e676;/* bright green for active tick */
+      --btn: #21262d;
+      --btnHover: #30363d;
+      --btnText: #e6edf3;
+      --accent: #ffd54f;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
     body {
       font-family: monospace;
-      padding: 10px;
       margin: 0;
-      background: #1e1e1e;
-      color: #dcdcdc;
+      background: var(--bg);
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
       width: 800px;
       height: 600px;
-      overflow: auto;
-      white-space: pre-wrap;
-      font-size: 16px;  
+      font-size: 16px;
     }
-    
-    pre {
+
+    /* Top bar */
+    #topbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+    }
+    #searchBox {
+      width: 100%;
+      padding: 6px 8px;
+      background: var(--panel);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+    .controls {
+      display: none;            /* shown when term present */
+      gap: 6px;
+      align-items: center;
+    }
+    .btn {
+      background: var(--btn);
+      color: var(--btnText);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn:hover { background: var(--btnHover); }
+    .btn[disabled] { opacity: .5; cursor: default; }
+    #count {
+      min-width: 68px;
+      text-align: center;
+      font-size: 12px;
+      opacity: .9;
+    }
+    #detected {
+      font-size: 12px;
+      opacity: 0.8;
+      margin: 0 10px 6px 10px;
+    }
+
+    /* Viewer shell (no scroll here) */
+    #viewer {
+      position: relative;
+      margin: 0 10px 10px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #0f141b;
+      flex: 1 1 auto;
+      overflow: clip;
+    }
+    /* Only scroll container */
+    #scroll {
+      position: absolute;
+      inset: 0;
+      padding: 10px 18px 10px 10px; /* room for rail */
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+    }
+    /* Content */
+    #output {
       white-space: pre-wrap;
       word-break: break-word;
+      overflow-wrap: anywhere;
+      margin: 0;
     }
+
+    /* Hit-map rail */
+    #hitMap {
+      position: absolute;
+      top: 0;
+      right: 4px;
+      width: 6px;
+      height: 100%;
+      pointer-events: none;
+    }
+    .tick {
+      position: absolute;
+      right: 0;
+      width: 6px;
+      height: 3px;               /* thicker for visibility */
+      background: var(--tick);
+      border-radius: 1px;
+      pointer-events: auto;      /* ticks are clickable */
+      cursor: pointer;
+      opacity: 1;
+      transition: transform 0.06s ease, background 0.06s ease;
+    }
+    .tick:hover { transform: scaleX(1.5); background: var(--tickHover); }
+    .tick.active { background: var(--tickActive); }
+
+    /* Search highlighting */
+    mark { background-color: yellow; color: black; padding: 0 2px; }
+    mark.active { outline: 2px solid var(--accent); }
+
+    /* XML colors */
+    .xml-tag  { color:#da1717; }
+    .xml-punc { color:#8b949e; }
+    .xml-attr { color:#d2a8ff; }
+    .xml-eq   { color:#8b949e; }
+    .xml-val  { color:#a5d6ff; }
+    .xml-comm { color:#7d8590; font-style:italic; }
+
+    /* JSON colors */
+    .json-punc   { color:#8b949e; }
+    .json-key    { color:#da1717; }
+    .json-string { color:#a5d6ff; }
+    .json-number { color:#ffd58a; }
+    .json-bool   { color:#ffab70; }
+    .json-null   { color:#7d8590; }
   </style>
 </head>
 <body>
-    <input 
-    id="searchBox" 
-    type="text" 
-    placeholder="Search logs..." 
-    style="width:100%; margin-bottom: 8px; padding: 5px;" 
-  />
-  <pre id="output">No logs yet...</pre>
+  <div id="topbar">
+    <input id="searchBox" type="text" placeholder="Search logs..." />
+    <div class="controls" id="navCtrls">
+      <button class="btn" id="prevBtn" title="Previous (Shift+Enter)">▲</button>
+      <div id="count">0 / 0</div>
+      <button class="btn" id="nextBtn" title="Next (Enter)">▼</button>
+    </div>
+    <div class="controls" id="clearCtrls">
+      <button class="btn" id="clearBtn" title="Clear search">Clear</button>
+    </div>
+  </div>
+
+  <div id="detected"></div>
+
+  <div id="viewer">
+    <div id="scroll">
+      <pre id="output">No logs yet...</pre>
+    </div>
+    <div id="hitMap"></div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
